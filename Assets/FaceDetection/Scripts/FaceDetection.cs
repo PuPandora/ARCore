@@ -9,17 +9,27 @@ using UnityEngine.XR.ARFoundation;
 
 public class FaceDetection : MonoBehaviour
 {
-    public List<GameObject> masks = new List<GameObject>(); // Mask
-    public int maskIndex;
+    [Header("Feature Group")]
+    // Mask
+    [SerializeField] List<GameObject> masks = new List<GameObject>();
+    [SerializeField] int maskIndex;
 
-    List<GameObject> regionFeatures = new List<GameObject>(); // Region fetures
+    // Region fetures
+    List<GameObject> regionFeatures = new List<GameObject>();
     public bool regionFeatureActive;
 
-    List<GameObject> totalFeatures = new List<GameObject>(); // Total 486 features
+    // Total 486 features
+    List<GameObject> totalFeatures = new List<GameObject>();
     public bool totalFeatureActive;
 
+    // Points
     List<TMP_Text> featureTexts = new List<TMP_Text>();
     [SerializeField] GameObject pointPrefab;
+
+    [Header("Christmas Group")]
+    [SerializeField] Accessory[] christmasAccessories;
+    [SerializeField] Accessory[] currentAccessories;
+
     ARCoreFaceSubsystem faceSubSystem;
     ARFaceManager faceManager;
     NativeArray<ARCoreFaceRegionData> faceRegions;
@@ -59,6 +69,7 @@ public class FaceDetection : MonoBehaviour
 
         faceManager.facesChanged += OnDetectedRegionPos;
         faceManager.facesChanged += OnDetectedTotalFeaturePos;
+        faceManager.facesChanged += LocateAccessories;
     }
 
     /// <summary>
@@ -96,12 +107,15 @@ public class FaceDetection : MonoBehaviour
     {
         if (!totalFeatureActive) return;
 
+        Vector3 verPos = Vector3.zero;
+        Vector3 worldVertPos = Vector3.zero;
+
         if (args.updated.Count > 0)
         {
             for (int i = 0; i < args.updated[0].vertices.Length; i++)
             {
-                Vector3 verPos = args.updated[0].vertices[i];
-                Vector3 worldVertPos = args.updated[0].transform.TransformPoint(verPos);
+                verPos = args.updated[0].vertices[i];
+                worldVertPos = args.updated[0].transform.TransformPoint(verPos);
 
                 totalFeatures[i].transform.position = worldVertPos;
                 //totalFeatures[i].SetActive(true);
@@ -124,9 +138,13 @@ public class FaceDetection : MonoBehaviour
     public void ChangeMask()
     {
         int index = ++maskIndex % masks.Count;
-        masks[(index - 1 < 0 ? masks.Count - 1 : index - 1) % masks.Count].SetActive(false);
+        masks[index - 1 < 0 ? masks.Count - 1 : index - 1].SetActive(false);
         masks[index].SetActive(true);
         faceManager.facePrefab = masks[index];
+
+        Destroy(FindObjectOfType<ARFace>().gameObject);
+        faceManager.enabled = false;
+        faceManager.enabled = true;
     }
 
     /// <summary>
@@ -152,6 +170,53 @@ public class FaceDetection : MonoBehaviour
         foreach (var feature in totalFeatures)
         {
             feature.SetActive(totalFeatureActive);
+        }
+    }
+
+    /// <summary>
+    /// 악세서리를 각 위치로 이동시키는 함수
+    /// </summary>
+    private void LocateAccessories(ARFacesChangedEventArgs args)
+    {
+        if (currentAccessories == null) return;
+
+        if (args.updated.Count > 0)
+        {
+            foreach (var item in currentAccessories)
+            {
+                item.InitSetting();
+                item.Locate(args);
+            }
+        }
+        else
+        {
+            foreach (var item in currentAccessories)
+            {
+                item.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 크리스마스 악세서리 토글
+    /// </summary>
+    public void ToggleChristmasAccessories()
+    {
+        if (currentAccessories == null)
+        {
+            currentAccessories = christmasAccessories;
+            foreach (var item in currentAccessories)
+            {
+                item.InitSetting();
+            }
+        }
+        else
+        {
+            foreach (var item in currentAccessories)
+            {
+                item.gameObject.SetActive(false);
+            }
+            currentAccessories = null;
         }
     }
 }
