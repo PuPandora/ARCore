@@ -8,9 +8,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/PlaneDetection/Scenes/PlaneDetection.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
-  - enabled: 1
+  - enabled: 0
     path: Assets/FaceDetection/Scenes/FaceDetection.unity
     guid: 76c41a8042c7ad6428da90f28227f9e2
+  - enabled: 1
+    path: Assets/ImageDetection/ImageDetection.unity
+    guid: cea61d5afeb29244286176ed66235783
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: a930858962464924ba9b12df1403949a, type: 2}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: ca68d8bd0dd4eda48bf468a695654977, type: 2}
